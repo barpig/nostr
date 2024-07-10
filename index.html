@@ -1,86 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Quote</title>
+    <title>Quote of the Day</title>
     <style>
-        /* Add your own styles here */
         body {
+            background-color: #333;
+            color: #fff;
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
+            text-align: center;
             padding: 20px;
         }
-        .quote-container {
-            max-width: 800px;
-            margin: 40px auto;
-            background-color: #fff;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        h1 {
+            font-size: 36px;
         }
         .quote {
             font-size: 24px;
-            line-height: 1.5;
             margin-bottom: 20px;
         }
         .author {
             font-size: 18px;
-            color: #666;
-        }
-        .toggle {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-        .dark-mode {
-            background-color: #222;
-            color: #fff;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="quote-container">
-        <p class="quote">Loading quote...</p>
-        <p class="author">Author</p>
-    </div>
-    <button class="toggle" onclick="toggleMode()">Toggle Mode</button>
-
+    <h1>Quote of the Day</h1>
+    <div class="quote">The greatest glory in living lies not in never falling, but in rising every time we fall.</div>
+    <div class="author">Nelson Mandela</div>
     <script>
-        let darkMode = false;
+        // Load quotes from a text file
+        const quotes = [];
+        fetch('quotes.txt')
+            .then(response => response.text())
+            .then(text => {
+                const lines = text.split('\n');
+                lines.forEach(line => {
+                    quotes.push(line.trim());
+                });
+            });
 
-        function loadQuotes() {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', 'quotes.txt', true);
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    var quotes = xhr.responseText.split('\n');
-                    var randomIndex = Math.floor(Math.random() * quotes.length);
-                    var randomQuote = quotes[randomIndex].split(',');
-                    document.querySelector('.quote').textContent = randomQuote[0];
-                    document.querySelector('.author').textContent = randomQuote[1];
-                }
-            };
-            xhr.send();
-        }
+        // Get a random quote for today
+        const today = new Date();
+        const day = today.getDate();
+        const quoteIndex = day % quotes.length;
+        const randomQuote = quotes[quoteIndex];
 
-        function toggleMode() {
-            darkMode = !darkMode;
-            document.body.style.backgroundColor = darkMode ? '#222' : '#f0f0f0';
-            document.body.style.color = darkMode ? '#fff' : '#333';
-            document.querySelector('.quote-container').style.backgroundColor = darkMode ? '#333' : '#fff';
-            document.querySelector('.quote-container').style.borderColor = darkMode ? '#444' : '#ddd';
-            document.querySelector('.toggle').classList.toggle('dark-mode');
-        }
-
-        loadQuotes();
+        document.querySelector(".quote").textContent = randomQuote;
+        document.querySelector(".author").textContent = "Unknown"; // Replace with actual author if available
     </script>
 </body>
 </html>
