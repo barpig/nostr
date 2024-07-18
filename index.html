@@ -1,77 +1,16 @@
+<!-- index.html -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Random Quote</title>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <style>
-    /* Add some styling to make the quote look more beautiful */
-    body {
-      background-color: #555657;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 50px;
-    }
-    h1 {
-      font-size: 36px;
-      margin-bottom: 20px;
-    }
-    #quote {
-      font-size: 24px;
-      margin-bottom: 20px;
-    }
-    #author {
-      font-size: 18px;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Quote</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Today's Quote</h1>
-  <p id="quote"></p>
-
-  <script>
-    $(document).ready(function() {
-      // Load the quotes from the text file
-      $.get("quotes.txt", function(data) {
-        // Split the data into an array of quotes
-        var quotes = data.split("\n");
-
-        // Get the current date
-        var today = new Date();
-        var todayDay = today.getUTCDate();
-        var todayMonth = today.getUTCMonth();
-        var todayYear = today.getUTCFullYear();
-      
-        // Get the last shown quote and date from Local Storage
-        var lastQuote = localStorage.getItem("lastQuote");
-        var lastDay = localStorage.getItem("lastDay");
-        var lastMonth = localStorage.getItem("lastMonth");
-        var lastYear = localStorage.getItem("lastYear");
-
-        // Check if the last shown quote was shown today
-        if (todayDay == lastDay && todayMonth == lastMonth && todayYear == lastYear) {
-          // Get the last shown quote
-          var quote = quotes[lastQuote];
-        } else {
-          // Get a random index from the array
-          var index = Math.floor(Math.random() * quotes.length);
-          var quote = quotes[index];
-          // Save the current day, month and year and the last shown quote in Local Storage
-          localStorage.setItem("lastDay", todayDay);
-          localStorage.setItem("lastMonth", todayMonth);
-          localStorage.setItem("lastYear", todayYear);
-          localStorage.setItem("lastQuote", index);
-        }
-
-        // Split the quote into the quote and author
-        var quoteParts = quote.split(" - ");
-        var quoteText = quoteParts[0];
-        var quoteAuthor = quoteParts[1];
-
-        // Update the text on the page
-        $("#quote").text(quoteText);
-        $("#author").text("- " + quoteAuthor);
-      });
-    });
-  </script>
+  <div class="typewriter">
+    <h1 id="quote"></h1>
+  </div>
+  <script src="script.js"></script>
 </body>
 </html>

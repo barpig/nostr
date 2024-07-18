@@ -1,0 +1,40 @@
+/* styles.css */
+body {
+  background-color: #333;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+.typewriter {
+  margin: 40px auto;
+  max-width: 600px;
+  padding: 20px;
+  background-color: #444;
+  border: 1px solid #222;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.typewriter h1 {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.typewriter .cursor {
+  border-right: 0.1em solid #fff;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0% {
+    border-color: #fff;
+  }
+  50% {
+    border-color: transparent;
+  }
+  100% {
+    border-color: #fff;
+  }
+}
