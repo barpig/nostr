@@ -1,0 +1,104 @@
+// >>> Six Bricks Competitive Config 0.1 <<< // comp.cfg
+
+
+// Reset from Practice to Competitive
+sv_cheats                            "false"    // Disable cheats
+mp_ct_default_grenades               ""         // Spawn CTs without grenades
+mp_t_default_grenades                ""         // Spawn Ts without grenades
+sv_showimpacts                       "0"        // Don't show bullet impacts
+sv_falldamage_scale                  "1"        // Enable fall damage
+sv_full_alltalk                      "0"        // Disable voice chat with anyone
+sv_ignoregrenaderadio                "false"    // Enable grenade radio msg
+mp_forcecamera                       "1"        // Disallow spectating any team
+weapon_auto_cleanup_time             "0"        // Disable auto cleanup
+mp_weapons_allow_typecount           "5"        // Reset purchase amount to default
+mp_death_drop_taser                  "true"     // Enable taser drop on death
+mp_drop_knife_enable                 "false"    // Disable knife dropping
+ff_damage_reduction_grenade_self     "1"        // Enable grenade self-damage
+sv_grenade_trajectory_prac_pipreview "false"    // Disable grenade preview
+// Apply Competitive Settings
+exec "gamemode_competitive"                     // Default competitive config
+mp_limitteams                        "0"        // Allow free team-switching
+bot_quota                            "0"        // Disable bots
+// Warmup Settings
+mp_warmup_online_enabled            "true"      // Enable warmup on dedicated server
+mp_warmup_pausetimer                "1"         // Enable infinite warmuptime until disabled
+mp_warmup_start                                 // Start warmup 
+sv_grenade_trajectory_prac_trailtime 0
+// ↓↓↓ Add Custom Configs Here Below ↓↓↓ // 
+// Chat Notifcations
+say >>> Six Bricks Competitive Config Loaded <<<
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////// prac.cfg
+
+// >>> Six Bricks Practice Config 0.1 <<< //
+
+
+// General Settings
+sv_cheats                           "true"      // Enable cheats
+mp_force_pick_time                  "0"         // Auto-join random team
+bot_quota                           "0"         // Disable bots
+sv_showimpacts                      "1"         // Show bullet impacts
+mp_limitteams                       "0"         // Don't limit teams
+// Damage Settings
+sv_regeneration_force_on            "true"      // Enable health regeneration
+sv_falldamage_scale                 "0"         // Disable fall damage
+ff_damage_reduction_grenade_self    "0"         // Remove grenade self-damage   
+inferno_damage                      "0"         // Remove molotov damage 
+// Communication Settings
+sv_deadtalk                         "true"      // Enable deadtalk
+sv_full_alltalk                     "true"      // Allow voice chat with anyone
+sv_ignoregrenaderadio               "false"     // Disable grenade radio msg
+mp_forcecamera                      "0"         // Allow spectating any team
+// Grenade Preview Settings
+sv_grenade_trajectory_prac_pipreview "true"     // Show grenade cam preview
+sv_grenade_trajectory_prac_trailtime "3"        // Seconds for grenade preview
+// Weapon Settings
+sv_infinite_ammo                    "1"         // Enable infinite ammo
+weapon_auto_cleanup_time            "15"        // Remove weapons automatically
+weapon_max_before_cleanup           "30"        // Remove only if >30 weapons
+// Purchase Settings
+mp_buy_anywhere                     "1"         // Enable purchasing from anywhere on the map
+mp_maxmoney                         "9999999"   // Set maximum money to 999999
+mp_startmoney                       "9999999"   // Set starting money to 999999
+mp_weapons_allow_typecount          "-1"        // Remove limit on purchase amount
+// Death and Drop Settings
+mp_death_drop_breachcharge          "false"     // Disable breach charge drop on death
+mp_death_drop_defuser               "false"     // Disable defuser drop on death
+mp_death_drop_taser                 "false"     // Disable taser drop on death
+mp_drop_knife_enable                "true"      // Enable knife dropping
+mp_death_drop_grenade               "0"         // Disable grenade drop on death
+// Default Weapon Allocation
+ammo_grenade_limit_total            "5"         // Set grenade limit to 5
+mp_defuser_allocation               "2"         // Spawn with defuse kit
+mp_free_armor                       "2"         // Spawn with full armor
+    
+// Spawn with AK/M4, Molo, HE, Smoke, Flash & Decoy
+mp_ct_default_grenades              "weapon_incgrenade weapon_hegrenade weapon_smokegrenade weapon_flashbang weapon_decoy"
+mp_ct_default_primary               "weapon_m4a1"
+mp_t_default_grenades               "weapon_molotov weapon_hegrenade weapon_smokegrenade weapon_flashbang weapon_decoy"
+mp_t_default_primary                "weapon_ak47"
+// Warmup Settings
+mp_warmup_online_enabled            "true"      // Enable warmup on dedicated server
+mp_warmup_pausetimer                "1"         // Enable infinite warmuptime until disabled
+mp_warmup_start                                 // Start warmup 
+mp_freezetime 0
+// ↓↓↓ Add Custom Configs Here Below ↓↓↓ // 
+// Chat Notifcations
+say >>> Six Bricks Practice Config Loaded <<<
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////// lo3.cfg
+
+// >>> Six Bricks Competitive Go Live Config 0.1 <<< //
+
+mp_limitteams               "1"     // Diable team-switch during the game
+mp_warmup_pausetimer        "0"     // Diable infinite warmup
+mp_warmup_end                       // End warmup 
+mp_restartgame 1                    // Restart game and go live
+mp_restartgame 1                    // Restart game and go live
+mp_restartgame 1                    // Restart game and go live
+
+
+// Chat Notifcations
+say >>> LIVE LIVE LIVE <<<
