@@ -2,6 +2,7 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const replayButton = document.getElementById('replayButton');
 const highScoreDisplay = document.getElementById('highScore');
+const levelDisplay = document.getElementById('level');
 const jumpscare = document.getElementById('jumpscare');
 const jumpscareImage = document.getElementById('jumpscareImage');
 
@@ -17,7 +18,8 @@ let food = {
 let score = 0;
 let highScore = 0;
 let speed = 100;
-let jumpscareScore = Math.floor(Math.random() * (22 - 1 + 1)) + 1;
+let level = 1;
+let jumpscareScore = Math.floor(Math.random() * (22 - 12 + 1)) + 12; // Jumpscare will happen between 12 and 22 points
 
 let d;
 
@@ -34,6 +36,12 @@ const screamSounds = [
     'scream1.mp3',
     'scream2.mp3',
     'scream3.mp3'
+];
+
+const eatSounds = [
+    'eat1.mp3',
+    'eat2.mp3',
+    'eat3.mp3'
 ];
 
 document.addEventListener('keydown', direction);
@@ -86,6 +94,30 @@ function draw() {
 
     if (snakeX == food.x && snakeY == food.y) {
         score++;
+        const randomEatSound = eatSounds[Math.floor(Math.random() * eatSounds.length)];
+        let eatAudio = new Audio(randomEatSound);
+        eatAudio.play(); // Play random eat sound
+        if (level === 1 && score >= 5) {
+            level = 2;
+            levelDisplay.textContent = 'Level: 2';
+            resetSnake();
+        } else if (level === 2 && score >= 10) {
+            level = 3;
+            levelDisplay.textContent = 'Level: 3';
+            resetSnake();
+        }
+        if (score === jumpscareScore) {
+            jumpscare.style.display = 'flex';
+            const randomImage = skeletonImages[Math.floor(Math.random() * skeletonImages.length)];
+            const randomSound = screamSounds[Math.floor(Math.random() * screamSounds.length)];
+            jumpscareImage.src = randomImage;
+            let screamAudio = new Audio(randomSound);
+            screamAudio.play();
+            setTimeout(() => {
+                jumpscare.style.display = 'none';
+                jumpscareImage.src = ''; // Reset the image source
+            }, 2000);
+        }
         speed -= 2; // Increase speed
         clearInterval(game);
         game = setInterval(draw, speed);
@@ -93,17 +125,6 @@ function draw() {
             x: Math.floor(Math.random() * 29 + 1) * box,
             y: Math.floor(Math.random() * 29 + 1) * box
         };
-        if (score === jumpscareScore) {
-            jumpscare.style.display = 'flex';
-            const randomImage = skeletonImages[Math.floor(Math.random() * skeletonImages.length)];
-            const randomSound = screamSounds[Math.floor(Math.random() * screamSounds.length)];
-            jumpscareImage.src = randomImage;
-            let audio = new Audio(randomSound);
-            audio.play();
-            setTimeout(() => {
-                jumpscare.style.display = 'none';
-            }, 2000);
-        }
     } else {
         snake.pop();
     }
@@ -129,6 +150,14 @@ function draw() {
     ctx.fillText(score, 2 * box, 1.6 * box);
 }
 
+function resetSnake() {
+    snake = [];
+    snake[0] = { x: 14 * box, y: 15 * box };
+    speed = 100;
+    clearInterval(game);
+    game = setInterval(draw, speed);
+}
+
 function restartGame() {
     snake = [];
     snake[0] = { x: 14 * box, y: 15 * box };
@@ -138,7 +167,8 @@ function restartGame() {
     };
     score = 0;
     speed = 100;
-    jumpscareScore = Math.floor(Math.random() * (22 - 1 + 1)) + 1;
+    level = 1;
+    levelDisplay.textContent = 'Level: 1';
     d = null;
     replayButton.style.display = 'none';
     game = setInterval(draw, speed);
