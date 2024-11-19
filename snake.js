@@ -1,11 +1,9 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const replayButton = document.getElementById('replayButton');
-const submitButton = document.getElementById('submitButton');
 const highScoreDisplay = document.getElementById('highScore');
-const leaderboardDisplay = document.getElementById('leaderboard');
-const nameInput = document.getElementById('nameInput');
 const jumpscare = document.getElementById('jumpscare');
+const jumpscareImage = document.getElementById('jumpscareImage');
 
 const box = 20;
 let snake = [];
@@ -18,13 +16,28 @@ let food = {
 
 let score = 0;
 let highScore = 0;
-let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+let speed = 100;
+let jumpscareScore = Math.floor(Math.random() * (22 - 1 + 1)) + 1;
 
 let d;
 
+const skeletonImages = [
+    'skeleton1.jpg',
+    'skeleton2.jpg',
+    'skeleton3.jpg',
+    'skeleton4.jpg',
+    'skeleton5.jpg',
+    'skeleton6.jpg'
+];
+
+const screamSounds = [
+    'scream1.mp3',
+    'scream2.mp3',
+    'scream3.mp3'
+];
+
 document.addEventListener('keydown', direction);
 replayButton.addEventListener('click', restartGame);
-submitButton.addEventListener('click', submitScore);
 
 function direction(event) {
     let key = event.keyCode;
@@ -73,13 +86,19 @@ function draw() {
 
     if (snakeX == food.x && snakeY == food.y) {
         score++;
+        speed -= 2; // Increase speed
+        clearInterval(game);
+        game = setInterval(draw, speed);
         food = {
             x: Math.floor(Math.random() * 29 + 1) * box,
             y: Math.floor(Math.random() * 29 + 1) * box
         };
-        if (score === 5) {
+        if (score === jumpscareScore) {
             jumpscare.style.display = 'flex';
-            let audio = new Audio('scream.mp3');
+            const randomImage = skeletonImages[Math.floor(Math.random() * skeletonImages.length)];
+            const randomSound = screamSounds[Math.floor(Math.random() * screamSounds.length)];
+            jumpscareImage.src = randomImage;
+            let audio = new Audio(randomSound);
             audio.play();
             setTimeout(() => {
                 jumpscare.style.display = 'none';
@@ -97,8 +116,6 @@ function draw() {
     if (snakeX < 0 || snakeY < 0 || snakeX >= canvas.width || snakeY >= canvas.height || collision(newHead, snake)) {
         clearInterval(game);
         replayButton.style.display = 'block';
-        nameInput.style.display = 'block';
-        submitButton.style.display = 'block';
         if (score > highScore) {
             highScore = score;
             highScoreDisplay.textContent = 'High Score: ' + highScore;
@@ -112,23 +129,6 @@ function draw() {
     ctx.fillText(score, 2 * box, 1.6 * box);
 }
 
-function submitScore() {
-    const playerName = nameInput.value.trim();
-    if (playerName && score > 0) {
-        leaderboard.push({ name: playerName, score: score });
-        leaderboard.sort((a, b) => b.score - a.score);
-        leaderboard = leaderboard.slice(0, 5);
-        localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
-        updateLeaderboard();
-    }
-    nameInput.style.display = 'none';
-    submitButton.style.display = 'none';
-}
-
-function updateLeaderboard() {
-    leaderboardDisplay.textContent = 'Leaderboard: ' + leaderboard.map(entry => `${entry.name}: ${entry.score}`).join(', ');
-}
-
 function restartGame() {
     snake = [];
     snake[0] = { x: 14 * box, y: 15 * box };
@@ -137,12 +137,11 @@ function restartGame() {
         y: Math.floor(Math.random() * 29 + 1) * box
     };
     score = 0;
+    speed = 100;
+    jumpscareScore = Math.floor(Math.random() * (22 - 1 + 1)) + 1;
     d = null;
     replayButton.style.display = 'none';
-    nameInput.style.display = 'none';
-    submitButton.style.display = 'none';
-    game = setInterval(draw, 100);
+    game = setInterval(draw, speed);
 }
 
-updateLeaderboard();
-let game = setInterval(draw, 100);
+let game = setInterval(draw, speed);
