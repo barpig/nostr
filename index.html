@@ -3,71 +3,354 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snake Game</title>
+    <title>rendo.club</title>
     <style>
         body {
+            margin: 0;
+            overflow: hidden;
+            background: #1a1a1a;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            margin: 0;
-            background: #000;
-            color: #fff;
-            font-family: Arial, sans-serif;
+            width: 100vw;
         }
-        #gameContainer {
-            position: relative;
-        }
-        #gameCanvas {
-            background: #333;
-            border: 2px solid #fff;
-        }
-        #replayButton {
-            display: none;
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        #highScore {
-            margin-top: 10px;
-            font-size: 20px;
-        }
-        #level {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 20px;
-        }
-        #jumpscare {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        #jumpscare img {
-            max-width: 80%;
-            max-height: 80%;
+        canvas {
+            display: block;
         }
     </style>
 </head>
 <body>
-    <div id="gameContainer">
-        <canvas id="gameCanvas" width="600" height="600"></canvas>
-        <div id="level">Level: 1</div>
-    </div>
-    <div id="highScore">High Score: 0</div>
-    <button id="replayButton">Replay</button>
-    <div id="jumpscare">
-        <img id="jumpscareImage" src="" alt="Jumpscare">
-    </div>
-    <script src="snake.js"></script>
+    <canvas id="canvas"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas size
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Particle class for "1337" words
+        class Particle {
+            constructor(x, y, homeX, homeY) {
+                this.x = x;
+                this.y = y;
+                this.homeX = homeX;
+                this.homeY = homeY;
+                this.vx = 0;
+                this.vy = 0;
+                this.size = 6;
+            }
+
+            update(mouseX, mouseY) {
+                const dx = this.x - mouseX;
+                const dy = this.y - mouseY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const forceDistance = 100;
+
+                if (distance < forceDistance) {
+                    const angle = Math.atan2(dy, dx);
+                    const force = (forceDistance - distance) / forceDistance;
+                    this.vx += Math.cos(angle + 0.5) * force * 5;
+                    this.vy += Math.sin(angle + 0.5) * force * 5;
+                }
+
+                const dxHome = this.homeX - this.x;
+                const dyHome = this.homeY - this.y;
+                this.vx += dxHome * 0.05;
+                this.vy += dyHome * 0.05;
+
+                this.vx *= 0.9;
+                this.vy *= 0.9;
+
+                this.x += this.vx;
+                this.y += this.vy;
+            }
+
+            draw() {
+                ctx.font = `${this.size}px Arial`;
+                ctx.fillText('1337', this.x, this.y);
+            }
+        }
+
+        let particles = [];
+        const text = 'rendo';
+        let fontSize = canvas.width / 5;
+        let startX, startY, textWidth;
+
+        // Initialize particles for "rendo" text
+        function initializeParticles() {
+            particles = [];
+            ctx.font = `${fontSize}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            textWidth = ctx.measureText(text).width;
+            startX = (canvas.width - textWidth) / 2;
+            startY = canvas.height / 3;
+
+            const gradient = ctx.createLinearGradient(startX, 0, startX + textWidth, 0);
+            gradient.addColorStop(0, '#1a3c34');
+            gradient.addColorStop(0.5, '#66b266');
+            gradient.addColorStop(1, '#a3e635');
+            ctx.fillStyle = gradient;
+
+            const density = 666;
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const charX = startX + ctx.measureText(text.slice(0, i)).width + ctx.measureText(char).width / 2;
+                ctx.fillText(char, charX, startY);
+
+                const imageData = ctx.getImageData(charX - fontSize / 2, startY - fontSize / 2, fontSize, fontSize);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                for (let y = 0; y < imageData.height; y += 4) {
+                    for (let x = 0; x < imageData.width; x += 4) {
+                        if (imageData.data[(y * imageData.width + x) * 4 + 3] > 128 && Math.random() < density) {
+                            const px = charX - fontSize / 2 + x;
+                            const py = startY - fontSize / 2 + y;
+                            particles.push(new Particle(px, py, px, py));
+                        }
+                    }
+                }
+            }
+        }
+
+        initializeParticles();
+
+        let mouseX = null;
+        let mouseY = null;
+
+        canvas.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        // Game setup
+        const game = {
+            dino: {
+                x: 50,
+                y: canvas.height - 100,
+                width: 20,
+                height: 40,
+                vy: 0,
+                gravity: 0.4,
+                jumpPower: -14,
+                onGround: true,
+                jumpScale: 1
+            },
+            obstacles: [],
+            obstacleTimer: 0,
+            obstacleInterval: 60,
+            gameOver: false,
+            score: 0,
+            highScore: localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0,
+            speed: 3
+        };
+
+        // Jump on spacebar
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && game.dino.onGround && !game.gameOver) {
+                game.dino.vy = game.dino.jumpPower;
+                game.dino.onGround = false;
+                game.dino.jumpScale = 0.8;
+            }
+            if (e.code === 'Space' && game.gameOver) {
+                // Restart game
+                game.dino.y = canvas.height - 100;
+                game.dino.vy = 0;
+                game.dino.onGround = true;
+                game.obstacles = [];
+                game.obstacleTimer = 0;
+                game.gameOver = false;
+                game.score = 0;
+                game.speed = 3;
+            }
+        });
+
+        // Update game state
+        function updateGame() {
+            if (game.gameOver) return;
+
+            // Update dino
+            game.dino.vy += game.dino.gravity;
+            game.dino.y += game.dino.vy;
+
+            if (game.dino.y > canvas.height - 100) {
+                game.dino.y = canvas.height - 100;
+                game.dino.vy = 0;
+                game.dino.onGround = true;
+                game.dino.jumpScale = 1;
+            } else {
+                game.dino.jumpScale += (1 - game.dino.jumpScale) * 0.1;
+            }
+
+            // Increase speed over time
+            game.speed += 0.002;
+            if (game.speed > 6) game.speed = 6;
+
+            // Spawn obstacles
+            game.obstacleTimer++;
+            if (game.obstacleTimer > game.obstacleInterval) {
+                const height = 20 + Math.random() * 10;
+                const speedVariation = 1 + Math.random() * 1;
+                game.obstacles.push({
+                    x: canvas.width,
+                    y: canvas.height - 80 - height,
+                    width: 10,
+                    height: height,
+                    speed: game.speed * speedVariation,
+                    passed: false
+                });
+                game.obstacleTimer = 0;
+                game.obstacleInterval = Math.random() * 40 + 60;
+            }
+
+            // Update obstacles
+            game.obstacles = game.obstacles.filter(obstacle => obstacle.x > -obstacle.width);
+            game.obstacles.forEach(obstacle => {
+                obstacle.x -= obstacle.speed;
+
+                // Increment score when dino passes obstacle
+                if (!obstacle.passed && obstacle.x + obstacle.width < game.dino.x) {
+                    game.score++;
+                    obstacle.passed = true;
+                    // Update high score
+                    if (game.score > game.highScore) {
+                        game.highScore = game.score;
+                        localStorage.setItem('highScore', game.highScore);
+                    }
+                }
+
+                // Collision detection
+                if (
+                    game.dino.x + game.dino.width > obstacle.x &&
+                    game.dino.x < obstacle.x + obstacle.width &&
+                    game.dino.y + (game.dino.height * game.dino.jumpScale) > obstacle.y
+                ) {
+                    game.gameOver = true;
+                }
+            });
+        }
+
+        // Draw game elements
+        function drawGame() {
+            // Draw ground
+            ctx.fillStyle = '#333';
+            ctx.fillRect(0, canvas.height - 80, canvas.width, 2);
+
+            // Draw dino with jump animation
+            const dinoGradient = ctx.createLinearGradient(game.dino.x, 0, game.dino.x + game.dino.width, 0);
+            dinoGradient.addColorStop(0, '#1a3c34');
+            dinoGradient.addColorStop(1, '#a3e635');
+            ctx.fillStyle = dinoGradient;
+            ctx.fillRect(game.dino.x, game.dino.y, game.dino.width, game.dino.height * game.dino.jumpScale);
+
+            // Draw obstacles
+            const obstacleGradient = ctx.createLinearGradient(0, canvas.height - 110, 0, canvas.height - 80);
+            obstacleGradient.addColorStop(0, '#1a3c34');
+            obstacleGradient.addColorStop(1, '#66b266');
+            ctx.fillStyle = obstacleGradient;
+            game.obstacles.forEach(obstacle => {
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            });
+
+            // Draw score and high score
+            ctx.fillStyle = '#fff';
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'right';
+            ctx.fillText(`Score: ${game.score}`, canvas.width - 20, canvas.height - 110);
+            ctx.fillText(`High Score: ${game.highScore}`, canvas.width - 20, canvas.height - 90);
+
+            // Draw game over
+            if (game.gameOver) {
+                ctx.fillStyle = '#fff';
+                ctx.font = '30px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Game Over - Press Space to Restart', canvas.width / 2, canvas.height - 30);
+            }
+        }
+
+        // Variables for link
+        let linkX, linkY, linkWidth;
+
+        // Draw x.com/rendo link
+        function drawLink() {
+            const linkText = 'x.com/rendo';
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'right';
+            linkWidth = ctx.measureText(linkText).width;
+            linkX = canvas.width - 20;
+            linkY = 30;
+
+            const linkGradient = ctx.createLinearGradient(linkX - linkWidth, 0, linkX, 0);
+            linkGradient.addColorStop(0, '#1a3c34');
+            linkGradient.addColorStop(0.5, '#66b266');
+            linkGradient.addColorStop(1, '#a3e635');
+            ctx.fillStyle = linkGradient;
+            ctx.fillText(linkText, linkX, linkY);
+        }
+
+        // Add click event listener for the link
+        function setupLinkClick() {
+            canvas.addEventListener('click', (e) => {
+                const clickX = e.clientX;
+                const clickY = e.clientY;
+                if (
+                    clickX >= linkX - linkWidth &&
+                    clickX <= linkX &&
+                    clickY >= linkY - 20 &&
+                    clickY <= linkY + 10
+                ) {
+                    window.open('https://x.com/rendo', '_blank');
+                }
+            });
+        }
+
+        // Initialize the click event listener
+        setupLinkClick();
+
+        // Animation loop
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw particles
+            const gradient = ctx.createLinearGradient(startX, 0, startX + textWidth, 0);
+            gradient.addColorStop(0, '#1a3c34');
+            gradient.addColorStop(0.5, '#66b266');
+            gradient.addColorStop(1, '#a3e635');
+            ctx.fillStyle = gradient;
+
+            particles.forEach(particle => {
+                particle.update(mouseX, mouseY);
+                particle.draw();
+            });
+
+            // Update and draw game
+            updateGame();
+            drawGame();
+
+            // Draw the link
+            drawLink();
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            fontSize = canvas.width / 5;
+            initializeParticles();
+            game.dino.y = canvas.height - 100;
+            game.obstacles = [];
+            game.obstacleTimer = 0;
+            game.score = 0;
+            game.speed = 3;
+            setupLinkClick(); // Reattach click event listener after resize
+        });
+    </script>
 </body>
 </html>
